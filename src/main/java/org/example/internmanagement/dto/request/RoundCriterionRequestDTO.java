@@ -10,6 +10,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RoundCriterionRequestDTO {
+    private Integer roundId;
     private Integer criterionId;
     private BigDecimal weight;
 }
