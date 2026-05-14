@@ -11,8 +11,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.web.bind.annotation.*;
 
+import org.example.internmanagement.dto.response.PagedData;
 import org.example.internmanagement.dto.response.Response;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -26,13 +28,15 @@ public class StudentController {
     private final UserService userService;
 
     @GetMapping
-    public ResponseEntity<Response<List<StudentResponseDTO>>> getAllStudents(
+    public ResponseEntity<Response<PagedData<StudentResponseDTO>>> getAllStudents(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
             @AuthenticationPrincipal UserDetails userDetails) {
         User currentUser = userService.getCurrentUser(userDetails);
-        return ResponseEntity.ok(Response.<List<StudentResponseDTO>>builder()
+        return ResponseEntity.ok(Response.<PagedData<StudentResponseDTO>>builder()
                 .success(true)
                 .message("Students fetched successfully")
-                .data(studentService.getAllStudents(currentUser))
+                .data(PagedData.from(studentService.getAllStudents(currentUser, PageRequest.of(page, size))))
                 .timestamp(LocalDateTime.now())
                 .build());
     }

@@ -10,8 +10,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.web.bind.annotation.*;
 
+import org.example.internmanagement.dto.response.PagedData;
 import org.example.internmanagement.dto.response.Response;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -28,11 +30,14 @@ public class UserController {
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Response<List<UserResponseDTO>>> getAllUsers(@RequestParam(required = false) User.Role role) {
-        return ResponseEntity.ok(Response.<List<UserResponseDTO>>builder()
+    public ResponseEntity<Response<PagedData<UserResponseDTO>>> getAllUsers(
+            @RequestParam(required = false) User.Role role,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(Response.<PagedData<UserResponseDTO>>builder()
                 .success(true)
                 .message("Users fetched successfully")
-                .data(userService.getAllUsers(role))
+                .data(PagedData.from(userService.getAllUsers(role, PageRequest.of(page, size))))
                 .timestamp(LocalDateTime.now())
                 .build());
     }

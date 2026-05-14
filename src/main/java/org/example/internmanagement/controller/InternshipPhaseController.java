@@ -11,8 +11,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.web.bind.annotation.*;
 
+import org.example.internmanagement.dto.response.PagedData;
 import org.example.internmanagement.dto.response.Response;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -26,13 +28,15 @@ public class InternshipPhaseController {
     private final UserService userService;
 
     @GetMapping
-    public ResponseEntity<Response<List<InternshipPhaseResponseDTO>>> getAllPhases(
+    public ResponseEntity<Response<PagedData<InternshipPhaseResponseDTO>>> getAllPhases(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
             @AuthenticationPrincipal UserDetails userDetails) {
         User currentUser = userService.getCurrentUser(userDetails);
-        return ResponseEntity.ok(Response.<List<InternshipPhaseResponseDTO>>builder()
+        return ResponseEntity.ok(Response.<PagedData<InternshipPhaseResponseDTO>>builder()
                 .success(true)
                 .message("Phases fetched successfully")
-                .data(internshipPhaseService.getAllPhases(currentUser))
+                .data(PagedData.from(internshipPhaseService.getAllPhases(currentUser, PageRequest.of(page, size))))
                 .timestamp(LocalDateTime.now())
                 .build());
     }

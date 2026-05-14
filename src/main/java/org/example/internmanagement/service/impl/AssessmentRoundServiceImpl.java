@@ -13,6 +13,8 @@ import org.example.internmanagement.repository.*;
 import org.example.internmanagement.service.AssessmentRoundService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -35,19 +37,19 @@ public class AssessmentRoundServiceImpl implements AssessmentRoundService {
     }
 
     @Override
-    public List<AssessmentRoundResponseDTO> getAllRounds(Integer phaseId, User user) {
+    public Page<AssessmentRoundResponseDTO> getAllRounds(Integer phaseId, User user, Pageable pageable) {
         if (user.getRole() != User.Role.ADMIN && user.getRole() != User.Role.MENTOR && user.getRole() != User.Role.STUDENT) {
             throw new ResourceNotFoundException("Access denied");
         }
 
-        List<AssessmentRound> rounds;
+        Page<AssessmentRound> roundPage;
         if (phaseId != null) {
-            rounds = assessmentRoundRepository.findByPhase_PhaseId(phaseId);
+            roundPage = assessmentRoundRepository.findByPhase_PhaseId(phaseId, pageable);
         } else {
-            rounds = assessmentRoundRepository.findAll();
+            roundPage = assessmentRoundRepository.findAll(pageable);
         }
 
-        return rounds.stream().map(this::mapToResponseDTO).collect(Collectors.toList());
+        return roundPage.map(this::mapToResponseDTO);
     }
 
     @Override

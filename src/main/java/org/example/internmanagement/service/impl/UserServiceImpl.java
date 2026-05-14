@@ -12,6 +12,8 @@ import org.example.internmanagement.service.UserService;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
@@ -36,14 +38,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<UserResponseDTO> getAllUsers(User.Role role) {
-        List<User> users;
+    public Page<UserResponseDTO> getAllUsers(User.Role role, Pageable pageable) {
+        Page<User> userPage;
         if (role != null) {
-            users = userRepository.findByRole(role);
+            userPage = userRepository.findByRole(role, pageable);
         } else {
-            users = userRepository.findAll();
+            userPage = userRepository.findAll(pageable);
         }
-        return users.stream().map(UserResponseDTO::fromEntity).collect(Collectors.toList());
+        return userPage.map(UserResponseDTO::fromEntity);
     }
 
     @Override

@@ -12,6 +12,8 @@ import org.example.internmanagement.repository.InternshipPhaseRepository;
 import org.example.internmanagement.service.InternshipPhaseService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -23,13 +25,13 @@ public class InternshipPhaseServiceImpl implements InternshipPhaseService {
     private final InternshipPhaseRepository internshipPhaseRepository;
 
     @Override
-    public List<InternshipPhaseResponseDTO> getAllPhases(User user) {
+    public Page<InternshipPhaseResponseDTO> getAllPhases(User user, Pageable pageable) {
         if (user.getRole() != User.Role.ADMIN && user.getRole() != User.Role.MENTOR && user.getRole() != User.Role.STUDENT) {
             throw new ResourceNotFoundException("Access denied");
         }
 
-        List<InternshipPhase> phases = internshipPhaseRepository.findAll();
-        return phases.stream().map(InternshipPhaseResponseDTO::fromEntity).collect(Collectors.toList());
+        Page<InternshipPhase> phases = internshipPhaseRepository.findAll(pageable);
+        return phases.map(InternshipPhaseResponseDTO::fromEntity);
     }
 
     @Override

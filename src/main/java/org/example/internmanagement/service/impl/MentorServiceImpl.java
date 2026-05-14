@@ -12,6 +12,8 @@ import org.example.internmanagement.repository.MentorRepository;
 import org.example.internmanagement.repository.UserRepository;
 import org.example.internmanagement.service.MentorService;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -25,13 +27,13 @@ public class MentorServiceImpl implements MentorService {
     private final UserRepository userRepository;
 
     @Override
-    public List<MentorResponseDTO> getAllMentors(User user) {
+    public Page<MentorResponseDTO> getAllMentors(User user, Pageable pageable) {
         if (user.getRole() != User.Role.ADMIN && user.getRole() != User.Role.STUDENT) {
             throw new ResourceNotFoundException("Access denied");
         }
 
-        List<Mentor> mentors = mentorRepository.findAll();
-        return mentors.stream().map(MentorResponseDTO::fromEntity).collect(Collectors.toList());
+        Page<Mentor> mentors = mentorRepository.findAll(pageable);
+        return mentors.map(MentorResponseDTO::fromEntity);
     }
 
     @Override

@@ -24,30 +24,28 @@ public class AssessmentResultServiceImpl implements AssessmentResultService {
     private final EvaluationCriterionRepository evaluationCriterionRepository;
 
     @Override
-    public List<AssessmentResultResponseDTO> getAssessmentResults(Integer assignmentId, User currentUser) {
-        List<AssessmentResult> results;
+    public Page<AssessmentResultResponseDTO> getAssessmentResults(Integer assignmentId, User currentUser, Pageable pageable) {
+        Page<AssessmentResult> results;
         if (currentUser.getRole() == User.Role.ADMIN) {
             if (assignmentId != null) {
-                results = assessmentResultRepository.findByAssignment_AssignmentId(assignmentId);
+                results = assessmentResultRepository.findByAssignment_AssignmentId(assignmentId, pageable);
             } else {
-                results = assessmentResultRepository.findAll();
+                results = assessmentResultRepository.findAll(pageable);
             }
         } else if (currentUser.getRole() == User.Role.MENTOR) {
             if (assignmentId != null) {
-                results = assessmentResultRepository.findByAssignment_AssignmentIdAndAssignment_Mentor_User_UserId(assignmentId, currentUser.getUserId());
+                results = assessmentResultRepository.findByAssignment_AssignmentIdAndAssignment_Mentor_User_UserId(assignmentId, currentUser.getUserId(), pageable);
             } else {
-                results = assessmentResultRepository.findByAssignment_Mentor_User_UserId(currentUser.getUserId());
+                results = assessmentResultRepository.findByAssignment_Mentor_User_UserId(currentUser.getUserId(), pageable);
             }
         } else { // STUDENT
             if (assignmentId != null) {
-                results = assessmentResultRepository.findByAssignment_AssignmentIdAndAssignment_Student_User_UserId(assignmentId, currentUser.getUserId());
+                results = assessmentResultRepository.findByAssignment_AssignmentIdAndAssignment_Student_User_UserId(assignmentId, currentUser.getUserId(), pageable);
             } else {
-                results = assessmentResultRepository.findByAssignment_Student_User_UserId(currentUser.getUserId());
+                results = assessmentResultRepository.findByAssignment_Student_User_UserId(currentUser.getUserId(), pageable);
             }
         }
-        return results.stream()
-                .map(AssessmentResultResponseDTO::fromEntity)
-                .collect(Collectors.toList());
+        return results.map(AssessmentResultResponseDTO::fromEntity);
     }
 
     @Override

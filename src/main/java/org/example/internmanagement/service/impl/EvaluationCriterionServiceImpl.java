@@ -12,6 +12,8 @@ import org.example.internmanagement.repository.EvaluationCriterionRepository;
 import org.example.internmanagement.service.EvaluationCriterionService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -23,13 +25,13 @@ public class EvaluationCriterionServiceImpl implements EvaluationCriterionServic
     private final EvaluationCriterionRepository evaluationCriterionRepository;
 
     @Override
-    public List<EvaluationCriterionResponseDTO> getAllCriteria(User user) {
+    public Page<EvaluationCriterionResponseDTO> getAllCriteria(User user, Pageable pageable) {
         if (user.getRole() != User.Role.ADMIN && user.getRole() != User.Role.MENTOR && user.getRole() != User.Role.STUDENT) {
             throw new ResourceNotFoundException("Access denied");
         }
 
-        List<EvaluationCriterion> criteria = evaluationCriterionRepository.findAll();
-        return criteria.stream().map(EvaluationCriterionResponseDTO::fromEntity).collect(Collectors.toList());
+        Page<EvaluationCriterion> criteria = evaluationCriterionRepository.findAll(pageable);
+        return criteria.map(EvaluationCriterionResponseDTO::fromEntity);
     }
 
     @Override

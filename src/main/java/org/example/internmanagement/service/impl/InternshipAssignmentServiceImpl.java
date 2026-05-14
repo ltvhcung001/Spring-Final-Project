@@ -27,18 +27,16 @@ public class InternshipAssignmentServiceImpl implements InternshipAssignmentServ
     private final InternshipPhaseRepository phaseRepository;
 
     @Override
-    public List<InternshipAssignmentResponseDTO> getAllAssignments(User currentUser) {
-        List<InternshipAssignment> assignments;
+    public Page<InternshipAssignmentResponseDTO> getAllAssignments(User currentUser, Pageable pageable) {
+        Page<InternshipAssignment> assignments;
         if (currentUser.getRole() == User.Role.ADMIN) {
-            assignments = internshipAssignmentRepository.findAll();
+            assignments = internshipAssignmentRepository.findAll(pageable);
         } else if (currentUser.getRole() == User.Role.MENTOR) {
-            assignments = internshipAssignmentRepository.findByMentor_User_UserId(currentUser.getUserId());
+            assignments = internshipAssignmentRepository.findByMentor_User_UserId(currentUser.getUserId(), pageable);
         } else {
-            assignments = internshipAssignmentRepository.findByStudent_User_UserId(currentUser.getUserId());
+            assignments = internshipAssignmentRepository.findByStudent_User_UserId(currentUser.getUserId(), pageable);
         }
-        return assignments.stream()
-                .map(InternshipAssignmentResponseDTO::fromEntity)
-                .collect(Collectors.toList());
+        return assignments.map(InternshipAssignmentResponseDTO::fromEntity);
     }
 
     @Override

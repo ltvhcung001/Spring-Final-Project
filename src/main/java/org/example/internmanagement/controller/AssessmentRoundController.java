@@ -11,8 +11,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.web.bind.annotation.*;
 
+import org.example.internmanagement.dto.response.PagedData;
 import org.example.internmanagement.dto.response.Response;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -26,14 +28,16 @@ public class AssessmentRoundController {
     private final UserService userService;
 
     @GetMapping
-    public ResponseEntity<Response<List<AssessmentRoundResponseDTO>>> getAllRounds(
+    public ResponseEntity<Response<PagedData<AssessmentRoundResponseDTO>>> getAllRounds(
             @RequestParam(required = false) Integer phaseId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
             @AuthenticationPrincipal UserDetails userDetails) {
         User currentUser = userService.getCurrentUser(userDetails);
-        return ResponseEntity.ok(Response.<List<AssessmentRoundResponseDTO>>builder()
+        return ResponseEntity.ok(Response.<PagedData<AssessmentRoundResponseDTO>>builder()
                 .success(true)
                 .message("Assessment rounds fetched successfully")
-                .data(assessmentRoundService.getAllRounds(phaseId, currentUser))
+                .data(PagedData.from(assessmentRoundService.getAllRounds(phaseId, currentUser, PageRequest.of(page, size))))
                 .timestamp(LocalDateTime.now())
                 .build());
     }

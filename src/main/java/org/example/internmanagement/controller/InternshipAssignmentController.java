@@ -12,8 +12,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.web.bind.annotation.*;
 
+import org.example.internmanagement.dto.response.PagedData;
 import org.example.internmanagement.dto.response.Response;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -28,13 +30,15 @@ public class InternshipAssignmentController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'MENTOR', 'STUDENT')")
-    public ResponseEntity<Response<List<InternshipAssignmentResponseDTO>>> getAllAssignments(
+    public ResponseEntity<Response<PagedData<InternshipAssignmentResponseDTO>>> getAllAssignments(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
             @AuthenticationPrincipal UserDetails userDetails) {
         User user = userService.getCurrentUser(userDetails);
-        return ResponseEntity.ok(Response.<List<InternshipAssignmentResponseDTO>>builder()
+        return ResponseEntity.ok(Response.<PagedData<InternshipAssignmentResponseDTO>>builder()
                 .success(true)
                 .message("Assignments fetched successfully")
-                .data(internshipAssignmentService.getAllAssignments(user))
+                .data(PagedData.from(internshipAssignmentService.getAllAssignments(user, PageRequest.of(page, size))))
                 .timestamp(LocalDateTime.now())
                 .build());
     }

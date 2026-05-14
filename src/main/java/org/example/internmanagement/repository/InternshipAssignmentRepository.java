@@ -2,6 +2,8 @@ package org.example.internmanagement.repository;
 
 import org.example.internmanagement.entity.InternshipAssignment;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -14,7 +16,7 @@ public interface InternshipAssignmentRepository extends JpaRepository<Internship
     List<InternshipAssignment> findByPhase_PhaseId(Integer phaseId);
     Optional<InternshipAssignment> findByStudent_StudentIdAndPhase_PhaseId(Integer studentId, Integer phaseId);
     boolean existsByStudent_StudentIdAndPhase_PhaseId(Integer studentId, Integer phaseId);
-    List<InternshipAssignment> findByStudent_User_UserId(Integer userId);
-    List<InternshipAssignment> findByMentor_User_UserId(Integer userId);
+    Page<InternshipAssignment> findByStudent_User_UserId(Integer userId, Pageable pageable);
+    Page<InternshipAssignment> findByMentor_User_UserId(Integer userId, Pageable pageable);
 }
 

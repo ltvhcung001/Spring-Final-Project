@@ -16,6 +16,8 @@ import org.example.internmanagement.repository.StudentRepository;
 import org.example.internmanagement.repository.UserRepository;
 import org.example.internmanagement.service.StudentService;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -30,21 +32,22 @@ public class StudentServiceImpl implements StudentService {
     private final InternshipAssignmentRepository internshipAssignmentRepository;
 
     @Override
-    public List<StudentResponseDTO> getAllStudents(User currentUser) {
-        List<Student> students;
+    public Page<StudentResponseDTO> getAllStudents(User currentUser, Pageable pageable) {
+        Page<Student> studentPage;
 
         if (currentUser.getRole() == User.Role.ADMIN) {
-            students = studentRepository.findAll();
+            studentPage = studentRepository.findAll(pageable);
         } else if (currentUser.getRole() == User.Role.MENTOR) {
             Mentor mentor = mentorRepository.findByUser_UserId(currentUser.getUserId())
                     .orElseThrow(() -> new ResourceNotFoundException("Mentor not found for current user"));
-            List<InternshipAssignment> assignments = internshipAssignmentRepository.findByMentor_MentorId(mentor.getMentorId());
-            students = assignments.stream().map(InternshipAssignment::getStudent).distinct().collect(Collectors.toList());
+            
+            // For Mentor, we might need a custom query in the repository for pagination
+            studentPage = studentRepository.findStudentsByMentorId(mentor.getMentorId(), pageable);
         } else {
             throw new ResourceNotFoundException("Access denied");
         }
 
-        return students.stream().map(StudentResponseDTO::fromEntity).collect(Collectors.toList());
+        return studentPage.map(StudentResponseDTO::fromEntity);
     }
 
     @Override
