@@ -2,11 +2,13 @@ package org.example.internmanagement.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.example.internmanagement.dto.request.StudentRequestDTO;
+import org.example.internmanagement.dto.request.StudentUpdateDTO;
 import org.example.internmanagement.dto.response.StudentResponseDTO;
 import org.example.internmanagement.entity.InternshipAssignment;
 import org.example.internmanagement.entity.Mentor;
 import org.example.internmanagement.entity.Student;
 import org.example.internmanagement.entity.User;
+import org.example.internmanagement.exception.DuplicateResourceException;
 import org.example.internmanagement.exception.ResourceNotFoundException;
 import org.example.internmanagement.repository.InternshipAssignmentRepository;
 import org.example.internmanagement.repository.MentorRepository;
@@ -74,7 +76,7 @@ public class StudentServiceImpl implements StudentService {
         }
 
         if (studentRepository.existsByStudentCode(request.getStudentCode())) {
-            throw new ResourceNotFoundException("Student code already exists");
+            throw new DuplicateResourceException("Student code already exists");
         }
 
         User user = userRepository.findById(request.getUserId())
@@ -85,7 +87,7 @@ public class StudentServiceImpl implements StudentService {
         }
         
         if (studentRepository.findByUser_UserId(user.getUserId()).isPresent()) {
-            throw new ResourceNotFoundException("User is already linked to a student");
+            throw new DuplicateResourceException("User is already linked to a student");
         }
 
         Student student = new Student();
@@ -100,7 +102,7 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
-    public StudentResponseDTO updateStudent(Integer studentId, StudentRequestDTO request, User currentUser) {
+    public StudentResponseDTO updateStudent(Integer studentId, StudentUpdateDTO request, User currentUser) {
         Student student = studentRepository.findById(studentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Student not found with id: " + studentId));
 
@@ -112,16 +114,16 @@ public class StudentServiceImpl implements StudentService {
             throw new ResourceNotFoundException("Access denied");
         }
 
-        if (!student.getStudentCode().equals(request.getStudentCode()) &&
+        if (request.getStudentCode() != null && !student.getStudentCode().equals(request.getStudentCode()) &&
                 studentRepository.existsByStudentCode(request.getStudentCode())) {
-            throw new ResourceNotFoundException("Student code already exists");
+            throw new DuplicateResourceException("Student code already exists");
         }
 
-        student.setStudentCode(request.getStudentCode());
-        student.setMajor(request.getMajor());
-        student.setClassName(request.getClassName());
-        student.setDateOfBirth(request.getDateOfBirth());
-        student.setAddress(request.getAddress());
+        if (request.getStudentCode() != null) student.setStudentCode(request.getStudentCode());
+        if (request.getMajor() != null) student.setMajor(request.getMajor());
+        if (request.getClassName() != null) student.setClassName(request.getClassName());
+        if (request.getDateOfBirth() != null) student.setDateOfBirth(request.getDateOfBirth());
+        if (request.getAddress() != null) student.setAddress(request.getAddress());
 
         return StudentResponseDTO.fromEntity(studentRepository.save(student));
     }

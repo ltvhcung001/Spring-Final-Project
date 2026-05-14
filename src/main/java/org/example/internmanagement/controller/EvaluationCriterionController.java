@@ -2,6 +2,7 @@ package org.example.internmanagement.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.example.internmanagement.dto.request.EvaluationCriterionRequestDTO;
+import org.example.internmanagement.dto.request.EvaluationCriterionUpdateDTO;
 import org.example.internmanagement.dto.response.EvaluationCriterionResponseDTO;
 import org.example.internmanagement.entity.User;
 import org.example.internmanagement.service.EvaluationCriterionService;
@@ -66,7 +67,7 @@ public class EvaluationCriterionController {
     @PutMapping("/{criterion_id}")
     public ResponseEntity<Response<EvaluationCriterionResponseDTO>> updateCriterion(
             @PathVariable("criterion_id") Integer criterionId,
-            @RequestBody EvaluationCriterionRequestDTO request,
+            @RequestBody EvaluationCriterionUpdateDTO request,
             @AuthenticationPrincipal UserDetails userDetails) {
         User currentUser = userService.getCurrentUser(userDetails);
         return ResponseEntity.ok(Response.<EvaluationCriterionResponseDTO>builder()

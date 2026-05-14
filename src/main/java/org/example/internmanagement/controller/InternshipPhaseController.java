@@ -2,6 +2,7 @@ package org.example.internmanagement.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.example.internmanagement.dto.request.InternshipPhaseRequestDTO;
+import org.example.internmanagement.dto.request.InternshipPhaseUpdateDTO;
 import org.example.internmanagement.dto.response.InternshipPhaseResponseDTO;
 import org.example.internmanagement.entity.User;
 import org.example.internmanagement.service.InternshipPhaseService;
@@ -66,7 +67,7 @@ public class InternshipPhaseController {
     @PutMapping("/{phase_id}")
     public ResponseEntity<Response<InternshipPhaseResponseDTO>> updatePhase(
             @PathVariable("phase_id") Integer phaseId,
-            @RequestBody InternshipPhaseRequestDTO request,
+            @RequestBody InternshipPhaseUpdateDTO request,
             @AuthenticationPrincipal UserDetails userDetails) {
         User currentUser = userService.getCurrentUser(userDetails);
         return ResponseEntity.ok(Response.<InternshipPhaseResponseDTO>builder()

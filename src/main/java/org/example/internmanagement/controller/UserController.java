@@ -1,12 +1,15 @@
 package org.example.internmanagement.controller;
 
 import org.example.internmanagement.dto.request.UserRequestDTO;
+import org.example.internmanagement.dto.request.UserUpdateDTO;
 import org.example.internmanagement.dto.response.UserResponseDTO;
 import org.example.internmanagement.entity.User;
 import org.example.internmanagement.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import org.example.internmanagement.dto.response.Response;
@@ -59,7 +62,7 @@ public class UserController {
 
     @PutMapping("/{user_id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Response<UserResponseDTO>> updateUser(@PathVariable Integer user_id, @RequestBody UserRequestDTO request) {
+    public ResponseEntity<Response<UserResponseDTO>> updateUser(@PathVariable Integer user_id, @RequestBody UserUpdateDTO request) {
         return ResponseEntity.ok(Response.<UserResponseDTO>builder()
                 .success(true)
                 .message("User updated successfully")
@@ -75,6 +78,21 @@ public class UserController {
                 .success(true)
                 .message("User status updated successfully")
                 .data(userService.updateStatus(user_id, isActive))
+                .timestamp(LocalDateTime.now())
+                .build());
+    }
+
+    @PutMapping("/{user_id}/role")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Response<UserResponseDTO>> updateRole(
+            @PathVariable Integer user_id, 
+            @RequestParam User.Role role,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        User currentUser = userService.getCurrentUser(userDetails);
+        return ResponseEntity.ok(Response.<UserResponseDTO>builder()
+                .success(true)
+                .message("User role updated successfully")
+                .data(userService.updateRole(user_id, role, currentUser))
                 .timestamp(LocalDateTime.now())
                 .build());
     }

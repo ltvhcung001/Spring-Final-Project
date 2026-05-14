@@ -6,5 +6,6 @@ import java.util.List;
 
 public interface RoundCriterionRepository extends JpaRepository<RoundCriterion, Integer> {
     List<RoundCriterion> findByRound_RoundId(Integer roundId);
+    boolean existsByRound_RoundIdAndCriterion_CriterionId(Integer roundId, Integer criterionId);
     void deleteAllByRound_RoundId(Integer roundId);
 }

@@ -2,8 +2,10 @@ package org.example.internmanagement.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.example.internmanagement.dto.request.AssessmentResultRequestDTO;
+import org.example.internmanagement.dto.request.AssessmentResultUpdateDTO;
 import org.example.internmanagement.dto.response.AssessmentResultResponseDTO;
 import org.example.internmanagement.entity.*;
+import org.example.internmanagement.exception.DuplicateResourceException;
 import org.example.internmanagement.exception.ResourceNotFoundException;
 import org.example.internmanagement.repository.*;
 import org.example.internmanagement.service.AssessmentResultService;
@@ -63,6 +65,11 @@ public class AssessmentResultServiceImpl implements AssessmentResultService {
         EvaluationCriterion criterion = evaluationCriterionRepository.findById(requestDTO.getCriterionId())
                 .orElseThrow(() -> new ResourceNotFoundException("Evaluation criterion not found with id " + requestDTO.getCriterionId()));
 
+        if (assessmentResultRepository.existsByAssignment_AssignmentIdAndRound_RoundIdAndCriterion_CriterionId(
+                assignment.getAssignmentId(), round.getRoundId(), criterion.getCriterionId())) {
+            throw new DuplicateResourceException("Assessment result already exists for this assignment, round and criterion");
+        }
+
         AssessmentResult result = new AssessmentResult();
         result.setAssignment(assignment);
         result.setRound(round);
@@ -76,7 +83,7 @@ public class AssessmentResultServiceImpl implements AssessmentResultService {
     }
 
     @Override
-    public AssessmentResultResponseDTO updateAssessmentResult(Integer resultId, AssessmentResultRequestDTO requestDTO, User currentUser) {
+    public AssessmentResultResponseDTO updateAssessmentResult(Integer resultId, AssessmentResultUpdateDTO requestDTO, User currentUser) {
         AssessmentResult result = assessmentResultRepository.findById(resultId)
                 .orElseThrow(() -> new ResourceNotFoundException("Assessment result not found with id " + resultId));
 

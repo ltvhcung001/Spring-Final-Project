@@ -9,5 +9,6 @@ import java.util.Optional;
 @Repository
 public interface InternshipPhaseRepository extends JpaRepository<InternshipPhase, Integer> {
     Optional<InternshipPhase> findByPhaseName(String phaseName);
+    boolean existsByPhaseName(String phaseName);
 }
 

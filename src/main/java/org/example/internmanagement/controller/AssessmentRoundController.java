@@ -2,6 +2,7 @@ package org.example.internmanagement.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.example.internmanagement.dto.request.AssessmentRoundRequestDTO;
+import org.example.internmanagement.dto.request.AssessmentRoundUpdateDTO;
 import org.example.internmanagement.dto.response.AssessmentRoundResponseDTO;
 import org.example.internmanagement.entity.User;
 import org.example.internmanagement.service.AssessmentRoundService;
@@ -67,7 +68,7 @@ public class AssessmentRoundController {
     @PutMapping("/{round_id}")
     public ResponseEntity<Response<AssessmentRoundResponseDTO>> updateRound(
             @PathVariable("round_id") Integer roundId,
-            @RequestBody AssessmentRoundRequestDTO request,
+            @RequestBody AssessmentRoundUpdateDTO request,
             @AuthenticationPrincipal UserDetails userDetails) {
         User currentUser = userService.getCurrentUser(userDetails);
         return ResponseEntity.ok(Response.<AssessmentRoundResponseDTO>builder()

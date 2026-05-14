@@ -10,6 +10,7 @@ import java.util.Optional;
 @Repository
 public interface AssessmentRoundRepository extends JpaRepository<AssessmentRound, Integer> {
     Optional<AssessmentRound> findByRoundName(String roundName);
+    boolean existsByRoundNameAndPhase_PhaseId(String roundName, Integer phaseId);
     List<AssessmentRound> findByPhase_PhaseId(Integer phaseId);
     List<AssessmentRound> findByIsActiveTrue();
 }

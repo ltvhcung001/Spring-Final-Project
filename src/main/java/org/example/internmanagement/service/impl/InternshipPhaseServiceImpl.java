@@ -2,9 +2,11 @@ package org.example.internmanagement.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.example.internmanagement.dto.request.InternshipPhaseRequestDTO;
+import org.example.internmanagement.dto.request.InternshipPhaseUpdateDTO;
 import org.example.internmanagement.dto.response.InternshipPhaseResponseDTO;
 import org.example.internmanagement.entity.InternshipPhase;
 import org.example.internmanagement.entity.User;
+import org.example.internmanagement.exception.DuplicateResourceException;
 import org.example.internmanagement.exception.ResourceNotFoundException;
 import org.example.internmanagement.repository.InternshipPhaseRepository;
 import org.example.internmanagement.service.InternshipPhaseService;
@@ -48,6 +50,10 @@ public class InternshipPhaseServiceImpl implements InternshipPhaseService {
             throw new ResourceNotFoundException("Access denied");
         }
 
+        if (internshipPhaseRepository.existsByPhaseName(request.getPhaseName())) {
+            throw new DuplicateResourceException("Phase name already exists");
+        }
+
         InternshipPhase phase = new InternshipPhase();
         phase.setPhaseName(request.getPhaseName());
         phase.setStartDate(request.getStartDate());
@@ -59,7 +65,7 @@ public class InternshipPhaseServiceImpl implements InternshipPhaseService {
 
     @Override
     @Transactional
-    public InternshipPhaseResponseDTO updatePhase(Integer phaseId, InternshipPhaseRequestDTO request, User user) {
+    public InternshipPhaseResponseDTO updatePhase(Integer phaseId, InternshipPhaseUpdateDTO request, User user) {
         if (user.getRole() != User.Role.ADMIN) {
             throw new ResourceNotFoundException("Access denied");
         }
@@ -67,10 +73,15 @@ public class InternshipPhaseServiceImpl implements InternshipPhaseService {
         InternshipPhase phase = internshipPhaseRepository.findById(phaseId)
                 .orElseThrow(() -> new ResourceNotFoundException("Internship phase not found with id: " + phaseId));
 
-        phase.setPhaseName(request.getPhaseName());
-        phase.setStartDate(request.getStartDate());
-        phase.setEndDate(request.getEndDate());
-        phase.setDescription(request.getDescription());
+        if (request.getPhaseName() != null && !phase.getPhaseName().equals(request.getPhaseName()) &&
+                internshipPhaseRepository.existsByPhaseName(request.getPhaseName())) {
+            throw new DuplicateResourceException("Phase name already exists");
+        }
+
+        if (request.getPhaseName() != null) phase.setPhaseName(request.getPhaseName());
+        if (request.getStartDate() != null) phase.setStartDate(request.getStartDate());
+        if (request.getEndDate() != null) phase.setEndDate(request.getEndDate());
+        if (request.getDescription() != null) phase.setDescription(request.getDescription());
 
         return InternshipPhaseResponseDTO.fromEntity(internshipPhaseRepository.save(phase));
     }

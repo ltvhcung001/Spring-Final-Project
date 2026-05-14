@@ -37,6 +37,28 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }
 
+    @ExceptionHandler(DuplicateResourceException.class)
+    public ResponseEntity<Response<?>> handleDuplicateResourceException(DuplicateResourceException ex, HttpServletRequest request) {
+        Response<?> errorResponse = Response.builder()
+                .success(false)
+                .message(ex.getMessage())
+                .timestamp(LocalDateTime.now())
+                .errors(HttpStatus.CONFLICT.getReasonPhrase())
+                .build();
+        return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Response<?>> handleIllegalArgumentException(IllegalArgumentException ex, HttpServletRequest request) {
+        Response<?> errorResponse = Response.builder()
+                .success(false)
+                .message(ex.getMessage())
+                .timestamp(LocalDateTime.now())
+                .errors(HttpStatus.BAD_REQUEST.getReasonPhrase())
+                .build();
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Response<?>> handleValidationExceptions(MethodArgumentNotValidException ex, HttpServletRequest request) {
         String message = "Validation failed";

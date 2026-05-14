@@ -2,6 +2,7 @@ package org.example.internmanagement.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.example.internmanagement.dto.request.MentorRequestDTO;
+import org.example.internmanagement.dto.request.MentorUpdateDTO;
 import org.example.internmanagement.dto.response.MentorResponseDTO;
 import org.example.internmanagement.entity.User;
 import org.example.internmanagement.service.MentorService;
@@ -66,7 +67,7 @@ public class MentorController {
     @PutMapping("/{mentor_id}")
     public ResponseEntity<Response<MentorResponseDTO>> updateMentor(
             @PathVariable("mentor_id") Integer mentorId,
-            @RequestBody MentorRequestDTO request,
+            @RequestBody MentorUpdateDTO request,
             @AuthenticationPrincipal UserDetails userDetails) {
         User currentUser = userService.getCurrentUser(userDetails);
         return ResponseEntity.ok(Response.<MentorResponseDTO>builder()

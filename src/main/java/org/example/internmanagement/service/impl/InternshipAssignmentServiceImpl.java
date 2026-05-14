@@ -5,6 +5,7 @@ import org.example.internmanagement.dto.request.InternshipAssignmentRequestDTO;
 import org.example.internmanagement.dto.request.InternshipAssignmentStatusRequestDTO;
 import org.example.internmanagement.dto.response.InternshipAssignmentResponseDTO;
 import org.example.internmanagement.entity.*;
+import org.example.internmanagement.exception.DuplicateResourceException;
 import org.example.internmanagement.exception.ResourceNotFoundException;
 import org.example.internmanagement.repository.InternshipAssignmentRepository;
 import org.example.internmanagement.repository.InternshipPhaseRepository;
@@ -63,6 +64,10 @@ public class InternshipAssignmentServiceImpl implements InternshipAssignmentServ
                 .orElseThrow(() -> new ResourceNotFoundException("Mentor not found with id " + requestDTO.getMentorId()));
         InternshipPhase phase = phaseRepository.findById(requestDTO.getPhaseId())
                 .orElseThrow(() -> new ResourceNotFoundException("Phase not found with id " + requestDTO.getPhaseId()));
+
+        if (internshipAssignmentRepository.existsByStudent_StudentIdAndPhase_PhaseId(student.getStudentId(), phase.getPhaseId())) {
+            throw new DuplicateResourceException("Student is already assigned to this phase");
+        }
 
         InternshipAssignment assignment = new InternshipAssignment();
         assignment.setStudent(student);

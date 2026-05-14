@@ -2,6 +2,7 @@ package org.example.internmanagement.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.example.internmanagement.dto.request.RoundCriterionRequestDTO;
+import org.example.internmanagement.dto.request.RoundCriterionUpdateDTO;
 import org.example.internmanagement.dto.response.RoundCriterionResponseDTO;
 import org.example.internmanagement.entity.User;
 import org.example.internmanagement.service.RoundCriterionService;
@@ -67,7 +68,7 @@ public class RoundCriterionController {
     @PutMapping("/{round_criterion_id}")
     public ResponseEntity<Response<RoundCriterionResponseDTO>> updateRoundCriterionWeight(
             @PathVariable("round_criterion_id") Integer roundCriterionId,
-            @RequestBody RoundCriterionRequestDTO request,
+            @RequestBody RoundCriterionUpdateDTO request,
             @AuthenticationPrincipal UserDetails userDetails) {
         User currentUser = userService.getCurrentUser(userDetails);
         return ResponseEntity.ok(Response.<RoundCriterionResponseDTO>builder()

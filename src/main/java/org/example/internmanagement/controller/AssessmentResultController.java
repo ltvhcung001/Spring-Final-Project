@@ -2,6 +2,7 @@ package org.example.internmanagement.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.example.internmanagement.dto.request.AssessmentResultRequestDTO;
+import org.example.internmanagement.dto.request.AssessmentResultUpdateDTO;
 import org.example.internmanagement.dto.response.AssessmentResultResponseDTO;
 import org.example.internmanagement.entity.User;
 import org.example.internmanagement.service.AssessmentResultService;
@@ -58,7 +59,7 @@ public class AssessmentResultController {
     @PreAuthorize("hasRole('MENTOR')")
     public ResponseEntity<Response<AssessmentResultResponseDTO>> updateAssessmentResult(
             @PathVariable("result_id") Integer resultId,
-            @RequestBody AssessmentResultRequestDTO requestDTO,
+            @RequestBody AssessmentResultUpdateDTO requestDTO,
             @AuthenticationPrincipal UserDetails userDetails) {
         User user = userService.getCurrentUser(userDetails);
         return ResponseEntity.ok(Response.<AssessmentResultResponseDTO>builder()

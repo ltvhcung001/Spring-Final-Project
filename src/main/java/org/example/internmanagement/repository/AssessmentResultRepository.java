@@ -13,6 +13,7 @@ public interface AssessmentResultRepository extends JpaRepository<AssessmentResu
     List<AssessmentResult> findByRound_RoundId(Integer roundId);
     List<AssessmentResult> findByCriterion_CriterionId(Integer criterionId);
     Optional<AssessmentResult> findByAssignment_AssignmentIdAndRound_RoundIdAndCriterion_CriterionId(Integer assignmentId, Integer roundId, Integer criterionId);
+    boolean existsByAssignment_AssignmentIdAndRound_RoundIdAndCriterion_CriterionId(Integer assignmentId, Integer roundId, Integer criterionId);
     List<AssessmentResult> findByEvaluatedBy_UserId(Integer evaluatedBy);
     List<AssessmentResult> findByAssignment_Mentor_User_UserId(Integer userId);
     List<AssessmentResult> findByAssignment_Student_User_UserId(Integer userId);

@@ -2,9 +2,11 @@ package org.example.internmanagement.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.example.internmanagement.dto.request.MentorRequestDTO;
+import org.example.internmanagement.dto.request.MentorUpdateDTO;
 import org.example.internmanagement.dto.response.MentorResponseDTO;
 import org.example.internmanagement.entity.Mentor;
 import org.example.internmanagement.entity.User;
+import org.example.internmanagement.exception.DuplicateResourceException;
 import org.example.internmanagement.exception.ResourceNotFoundException;
 import org.example.internmanagement.repository.MentorRepository;
 import org.example.internmanagement.repository.UserRepository;
@@ -63,7 +65,7 @@ public class MentorServiceImpl implements MentorService {
         }
 
         if (mentorRepository.findByUser_UserId(user.getUserId()).isPresent()) {
-            throw new ResourceNotFoundException("User is already linked to a mentor");
+            throw new DuplicateResourceException("User is already linked to a mentor");
         }
 
         Mentor mentor = new Mentor();
@@ -76,7 +78,7 @@ public class MentorServiceImpl implements MentorService {
 
     @Override
     @Transactional
-    public MentorResponseDTO updateMentor(Integer mentorId, MentorRequestDTO request, User user) {
+    public MentorResponseDTO updateMentor(Integer mentorId, MentorUpdateDTO request, User user) {
         Mentor mentor = mentorRepository.findById(mentorId)
                 .orElseThrow(() -> new ResourceNotFoundException("Mentor not found with id: " + mentorId));
 
@@ -88,8 +90,8 @@ public class MentorServiceImpl implements MentorService {
             throw new ResourceNotFoundException("Access denied");
         }
 
-        mentor.setDepartment(request.getDepartment());
-        mentor.setAcademicRank(request.getAcademicRank());
+        if (request.getDepartment() != null) mentor.setDepartment(request.getDepartment());
+        if (request.getAcademicRank() != null) mentor.setAcademicRank(request.getAcademicRank());
 
         return MentorResponseDTO.fromEntity(mentorRepository.save(mentor));
     }

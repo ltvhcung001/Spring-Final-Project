@@ -2,10 +2,12 @@ package org.example.internmanagement.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.example.internmanagement.dto.request.AssessmentRoundRequestDTO;
+import org.example.internmanagement.dto.request.AssessmentRoundUpdateDTO;
 import org.example.internmanagement.dto.request.RoundCriterionRequestDTO;
 import org.example.internmanagement.dto.response.AssessmentRoundResponseDTO;
 import org.example.internmanagement.dto.response.RoundCriterionResponseDTO;
 import org.example.internmanagement.entity.*;
+import org.example.internmanagement.exception.DuplicateResourceException;
 import org.example.internmanagement.exception.ResourceNotFoundException;
 import org.example.internmanagement.repository.*;
 import org.example.internmanagement.service.AssessmentRoundService;
@@ -70,6 +72,10 @@ public class AssessmentRoundServiceImpl implements AssessmentRoundService {
         InternshipPhase phase = internshipPhaseRepository.findById(request.getPhaseId())
                 .orElseThrow(() -> new ResourceNotFoundException("Phase not found with id: " + request.getPhaseId()));
 
+        if (assessmentRoundRepository.existsByRoundNameAndPhase_PhaseId(request.getRoundName(), phase.getPhaseId())) {
+            throw new DuplicateResourceException("Round name already exists in this phase");
+        }
+
         AssessmentRound round = new AssessmentRound();
         round.setPhase(phase);
         round.setRoundName(request.getRoundName());
@@ -100,7 +106,7 @@ public class AssessmentRoundServiceImpl implements AssessmentRoundService {
 
     @Override
     @Transactional
-    public AssessmentRoundResponseDTO updateRound(Integer roundId, AssessmentRoundRequestDTO request, User user) {
+    public AssessmentRoundResponseDTO updateRound(Integer roundId, AssessmentRoundUpdateDTO request, User user) {
         if (user.getRole() != User.Role.ADMIN) {
             throw new ResourceNotFoundException("Access denied");
         }
@@ -111,13 +117,25 @@ public class AssessmentRoundServiceImpl implements AssessmentRoundService {
         if (request.getPhaseId() != null) {
             InternshipPhase phase = internshipPhaseRepository.findById(request.getPhaseId())
                     .orElseThrow(() -> new ResourceNotFoundException("Phase not found with id: " + request.getPhaseId()));
+            
+            String newName = request.getRoundName() != null ? request.getRoundName() : round.getRoundName();
+            if (!round.getRoundName().equals(newName) || !round.getPhase().getPhaseId().equals(request.getPhaseId())) {
+                if (assessmentRoundRepository.existsByRoundNameAndPhase_PhaseId(newName, phase.getPhaseId())) {
+                    throw new DuplicateResourceException("Round name already exists in this phase");
+                }
+            }
             round.setPhase(phase);
+        } else if (request.getRoundName() != null) {
+            if (!round.getRoundName().equals(request.getRoundName()) &&
+                    assessmentRoundRepository.existsByRoundNameAndPhase_PhaseId(request.getRoundName(), round.getPhase().getPhaseId())) {
+                throw new DuplicateResourceException("Round name already exists in this phase");
+            }
         }
 
-        round.setRoundName(request.getRoundName());
-        round.setStartDate(request.getStartDate());
-        round.setEndDate(request.getEndDate());
-        round.setDescription(request.getDescription());
+        if (request.getRoundName() != null) round.setRoundName(request.getRoundName());
+        if (request.getStartDate() != null) round.setStartDate(request.getStartDate());
+        if (request.getEndDate() != null) round.setEndDate(request.getEndDate());
+        if (request.getDescription() != null) round.setDescription(request.getDescription());
         if (request.getIsActive() != null) {
             round.setIsActive(request.getIsActive());
         }

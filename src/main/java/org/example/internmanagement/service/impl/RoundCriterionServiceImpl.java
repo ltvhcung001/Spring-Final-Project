@@ -2,11 +2,13 @@ package org.example.internmanagement.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.example.internmanagement.dto.request.RoundCriterionRequestDTO;
+import org.example.internmanagement.dto.request.RoundCriterionUpdateDTO;
 import org.example.internmanagement.dto.response.RoundCriterionResponseDTO;
 import org.example.internmanagement.entity.AssessmentRound;
 import org.example.internmanagement.entity.EvaluationCriterion;
 import org.example.internmanagement.entity.RoundCriterion;
 import org.example.internmanagement.entity.User;
+import org.example.internmanagement.exception.DuplicateResourceException;
 import org.example.internmanagement.exception.ResourceNotFoundException;
 import org.example.internmanagement.repository.AssessmentRoundRepository;
 import org.example.internmanagement.repository.EvaluationCriterionRepository;
@@ -65,6 +67,10 @@ public class RoundCriterionServiceImpl implements RoundCriterionService {
         EvaluationCriterion criterion = evaluationCriterionRepository.findById(request.getCriterionId())
                 .orElseThrow(() -> new ResourceNotFoundException("Evaluation criterion not found with id: " + request.getCriterionId()));
 
+        if (roundCriterionRepository.existsByRound_RoundIdAndCriterion_CriterionId(round.getRoundId(), criterion.getCriterionId())) {
+            throw new DuplicateResourceException("Criterion already exists in this round");
+        }
+
         RoundCriterion roundCriterion = new RoundCriterion();
         roundCriterion.setRound(round);
         roundCriterion.setCriterion(criterion);
@@ -75,7 +81,7 @@ public class RoundCriterionServiceImpl implements RoundCriterionService {
 
     @Override
     @Transactional
-    public RoundCriterionResponseDTO updateRoundCriterionWeight(Integer roundCriterionId, RoundCriterionRequestDTO request, User user) {
+    public RoundCriterionResponseDTO updateRoundCriterionWeight(Integer roundCriterionId, RoundCriterionUpdateDTO request, User user) {
         if (user.getRole() != User.Role.ADMIN) {
             throw new ResourceNotFoundException("Access denied");
         }
