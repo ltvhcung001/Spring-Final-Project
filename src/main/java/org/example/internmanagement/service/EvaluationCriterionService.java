@@ -1,0 +1,15 @@
+package org.example.internmanagement.service;
+
+import org.example.internmanagement.dto.request.EvaluationCriterionRequestDTO;
+import org.example.internmanagement.dto.response.EvaluationCriterionResponseDTO;
+import org.example.internmanagement.entity.User;
+
+import java.util.List;
+
+public interface EvaluationCriterionService {
+    List<EvaluationCriterionResponseDTO> getAllCriteria(User user);
+    EvaluationCriterionResponseDTO getCriterionById(Integer criterionId, User user);
+    EvaluationCriterionResponseDTO createCriterion(EvaluationCriterionRequestDTO request, User user);
+    EvaluationCriterionResponseDTO updateCriterion(Integer criterionId, EvaluationCriterionRequestDTO request, User user);
+    void deleteCriterion(Integer criterionId, User user);
+}

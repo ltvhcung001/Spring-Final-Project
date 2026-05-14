@@ -1,0 +1,96 @@
+package org.example.internmanagement.service.impl;
+
+import lombok.RequiredArgsConstructor;
+import org.example.internmanagement.dto.request.MentorRequestDTO;
+import org.example.internmanagement.dto.response.MentorResponseDTO;
+import org.example.internmanagement.entity.Mentor;
+import org.example.internmanagement.entity.User;
+import org.example.internmanagement.exception.ResourceNotFoundException;
+import org.example.internmanagement.repository.MentorRepository;
+import org.example.internmanagement.repository.UserRepository;
+import org.example.internmanagement.service.MentorService;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Service
+@RequiredArgsConstructor
+public class MentorServiceImpl implements MentorService {
+
+    private final MentorRepository mentorRepository;
+    private final UserRepository userRepository;
+
+    @Override
+    public List<MentorResponseDTO> getAllMentors(User user) {
+        if (user.getRole() != User.Role.ADMIN && user.getRole() != User.Role.STUDENT) {
+            throw new ResourceNotFoundException("Access denied");
+        }
+
+        List<Mentor> mentors = mentorRepository.findAll();
+        return mentors.stream().map(MentorResponseDTO::fromEntity).collect(Collectors.toList());
+    }
+
+    @Override
+    public MentorResponseDTO getMentorById(Integer mentorId, User user) {
+        Mentor mentor = mentorRepository.findById(mentorId)
+                .orElseThrow(() -> new ResourceNotFoundException("Mentor not found with id: " + mentorId));
+
+        if (user.getRole() == User.Role.MENTOR) {
+            if (!mentor.getUser().getUserId().equals(user.getUserId())) {
+                throw new ResourceNotFoundException("Access denied: You can only view your own profile");
+            }
+        } else if (user.getRole() != User.Role.ADMIN && user.getRole() != User.Role.STUDENT) {
+            throw new ResourceNotFoundException("Access denied");
+        }
+
+        return MentorResponseDTO.fromEntity(mentor);
+    }
+
+    @Override
+    @Transactional
+    public MentorResponseDTO createMentor(MentorRequestDTO request, User currentUser) {
+        if (currentUser.getRole() != User.Role.ADMIN) {
+            throw new ResourceNotFoundException("Access denied");
+        }
+
+        User user = userRepository.findById(request.getUserId())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + request.getUserId()));
+
+        if (user.getRole() != User.Role.MENTOR) {
+            throw new ResourceNotFoundException("User must have MENTOR role");
+        }
+
+        if (mentorRepository.findByUser_UserId(user.getUserId()).isPresent()) {
+            throw new ResourceNotFoundException("User is already linked to a mentor");
+        }
+
+        Mentor mentor = new Mentor();
+        mentor.setUser(user);
+        mentor.setDepartment(request.getDepartment());
+        mentor.setAcademicRank(request.getAcademicRank());
+
+        return MentorResponseDTO.fromEntity(mentorRepository.save(mentor));
+    }
+
+    @Override
+    @Transactional
+    public MentorResponseDTO updateMentor(Integer mentorId, MentorRequestDTO request, User user) {
+        Mentor mentor = mentorRepository.findById(mentorId)
+                .orElseThrow(() -> new ResourceNotFoundException("Mentor not found with id: " + mentorId));
+
+        if (user.getRole() == User.Role.MENTOR) {
+            if (!mentor.getUser().getUserId().equals(user.getUserId())) {
+                throw new ResourceNotFoundException("Access denied");
+            }
+        } else if (user.getRole() != User.Role.ADMIN) {
+            throw new ResourceNotFoundException("Access denied");
+        }
+
+        mentor.setDepartment(request.getDepartment());
+        mentor.setAcademicRank(request.getAcademicRank());
+
+        return MentorResponseDTO.fromEntity(mentorRepository.save(mentor));
+    }
+}
