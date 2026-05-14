@@ -12,6 +12,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import org.example.internmanagement.dto.response.Response;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -23,44 +25,68 @@ public class EvaluationCriterionController {
     private final UserService userService;
 
     @GetMapping
-    public ResponseEntity<List<EvaluationCriterionResponseDTO>> getAllCriteria(
+    public ResponseEntity<Response<List<EvaluationCriterionResponseDTO>>> getAllCriteria(
             @AuthenticationPrincipal UserDetails userDetails) {
         User currentUser = userService.getCurrentUser(userDetails);
-        return ResponseEntity.ok(evaluationCriterionService.getAllCriteria(currentUser));
+        return ResponseEntity.ok(Response.<List<EvaluationCriterionResponseDTO>>builder()
+                .success(true)
+                .message("Evaluation criteria fetched successfully")
+                .data(evaluationCriterionService.getAllCriteria(currentUser))
+                .timestamp(LocalDateTime.now())
+                .build());
     }
 
     @GetMapping("/{criterion_id}")
-    public ResponseEntity<EvaluationCriterionResponseDTO> getCriterionById(
+    public ResponseEntity<Response<EvaluationCriterionResponseDTO>> getCriterionById(
             @PathVariable("criterion_id") Integer criterionId,
             @AuthenticationPrincipal UserDetails userDetails) {
         User currentUser = userService.getCurrentUser(userDetails);
-        return ResponseEntity.ok(evaluationCriterionService.getCriterionById(criterionId, currentUser));
+        return ResponseEntity.ok(Response.<EvaluationCriterionResponseDTO>builder()
+                .success(true)
+                .message("Evaluation criterion fetched successfully")
+                .data(evaluationCriterionService.getCriterionById(criterionId, currentUser))
+                .timestamp(LocalDateTime.now())
+                .build());
     }
 
     @PostMapping
-    public ResponseEntity<EvaluationCriterionResponseDTO> createCriterion(
+    public ResponseEntity<Response<EvaluationCriterionResponseDTO>> createCriterion(
             @RequestBody EvaluationCriterionRequestDTO request,
             @AuthenticationPrincipal UserDetails userDetails) {
         User currentUser = userService.getCurrentUser(userDetails);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(evaluationCriterionService.createCriterion(request, currentUser));
+                .body(Response.<EvaluationCriterionResponseDTO>builder()
+                        .success(true)
+                        .message("Evaluation criterion created successfully")
+                        .data(evaluationCriterionService.createCriterion(request, currentUser))
+                        .timestamp(LocalDateTime.now())
+                        .build());
     }
 
     @PutMapping("/{criterion_id}")
-    public ResponseEntity<EvaluationCriterionResponseDTO> updateCriterion(
+    public ResponseEntity<Response<EvaluationCriterionResponseDTO>> updateCriterion(
             @PathVariable("criterion_id") Integer criterionId,
             @RequestBody EvaluationCriterionRequestDTO request,
             @AuthenticationPrincipal UserDetails userDetails) {
         User currentUser = userService.getCurrentUser(userDetails);
-        return ResponseEntity.ok(evaluationCriterionService.updateCriterion(criterionId, request, currentUser));
+        return ResponseEntity.ok(Response.<EvaluationCriterionResponseDTO>builder()
+                .success(true)
+                .message("Evaluation criterion updated successfully")
+                .data(evaluationCriterionService.updateCriterion(criterionId, request, currentUser))
+                .timestamp(LocalDateTime.now())
+                .build());
     }
 
     @DeleteMapping("/{criterion_id}")
-    public ResponseEntity<Void> deleteCriterion(
+    public ResponseEntity<Response<Void>> deleteCriterion(
             @PathVariable("criterion_id") Integer criterionId,
             @AuthenticationPrincipal UserDetails userDetails) {
         User currentUser = userService.getCurrentUser(userDetails);
         evaluationCriterionService.deleteCriterion(criterionId, currentUser);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(Response.<Void>builder()
+                .success(true)
+                .message("Evaluation criterion deleted successfully")
+                .timestamp(LocalDateTime.now())
+                .build());
     }
 }

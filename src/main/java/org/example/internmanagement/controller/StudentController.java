@@ -12,6 +12,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import org.example.internmanagement.dto.response.Response;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -23,35 +25,55 @@ public class StudentController {
     private final UserService userService;
 
     @GetMapping
-    public ResponseEntity<List<StudentResponseDTO>> getAllStudents(
+    public ResponseEntity<Response<List<StudentResponseDTO>>> getAllStudents(
             @AuthenticationPrincipal UserDetails userDetails) {
         User currentUser = userService.getCurrentUser(userDetails);
-        return ResponseEntity.ok(studentService.getAllStudents(currentUser));
+        return ResponseEntity.ok(Response.<List<StudentResponseDTO>>builder()
+                .success(true)
+                .message("Students fetched successfully")
+                .data(studentService.getAllStudents(currentUser))
+                .timestamp(LocalDateTime.now())
+                .build());
     }
 
     @GetMapping("/{student_id}")
-    public ResponseEntity<StudentResponseDTO> getStudentById(
+    public ResponseEntity<Response<StudentResponseDTO>> getStudentById(
             @PathVariable("student_id") Integer studentId,
             @AuthenticationPrincipal UserDetails userDetails) {
         User currentUser = userService.getCurrentUser(userDetails);
-        return ResponseEntity.ok(studentService.getStudentById(studentId, currentUser));
+        return ResponseEntity.ok(Response.<StudentResponseDTO>builder()
+                .success(true)
+                .message("Student fetched successfully")
+                .data(studentService.getStudentById(studentId, currentUser))
+                .timestamp(LocalDateTime.now())
+                .build());
     }
 
     @PostMapping
-    public ResponseEntity<StudentResponseDTO> createStudent(
+    public ResponseEntity<Response<StudentResponseDTO>> createStudent(
             @RequestBody StudentRequestDTO request,
             @AuthenticationPrincipal UserDetails userDetails) {
         User currentUser = userService.getCurrentUser(userDetails);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(studentService.createStudent(request, currentUser));
+                .body(Response.<StudentResponseDTO>builder()
+                        .success(true)
+                        .message("Student created successfully")
+                        .data(studentService.createStudent(request, currentUser))
+                        .timestamp(LocalDateTime.now())
+                        .build());
     }
 
     @PutMapping("/{student_id}")
-    public ResponseEntity<StudentResponseDTO> updateStudent(
+    public ResponseEntity<Response<StudentResponseDTO>> updateStudent(
             @PathVariable("student_id") Integer studentId,
             @RequestBody StudentRequestDTO request,
             @AuthenticationPrincipal UserDetails userDetails) {
         User currentUser = userService.getCurrentUser(userDetails);
-        return ResponseEntity.ok(studentService.updateStudent(studentId, request, currentUser));
+        return ResponseEntity.ok(Response.<StudentResponseDTO>builder()
+                .success(true)
+                .message("Student updated successfully")
+                .data(studentService.updateStudent(studentId, request, currentUser))
+                .timestamp(LocalDateTime.now())
+                .build());
     }
 }

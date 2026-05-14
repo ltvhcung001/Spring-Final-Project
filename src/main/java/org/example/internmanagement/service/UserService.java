@@ -6,9 +6,11 @@ import org.example.internmanagement.entity.User;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface UserService {
     User getCurrentUser(UserDetails userDetails);
+    Optional<User> findByUsername(String username);
     List<UserResponseDTO> getAllUsers(User.Role role);
     UserResponseDTO getUserById(Integer userId);
     UserResponseDTO createUser(UserRequestDTO request);

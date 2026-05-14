@@ -2,38 +2,35 @@ package org.example.internmanagement.controller;
 
 import org.example.internmanagement.dto.request.LoginRequest;
 import org.example.internmanagement.dto.response.LoginResponse;
+import org.example.internmanagement.dto.response.Response;
 import org.example.internmanagement.entity.User;
-import org.example.internmanagement.repository.UserRepository;
+import org.example.internmanagement.service.UserService;
 import org.example.internmanagement.security.JwtUtil;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import lombok.RequiredArgsConstructor;
+
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
 @CrossOrigin(origins = "*", maxAge = 3600)
+@RequiredArgsConstructor
 public class AuthController {
 
-    @Autowired
-    private AuthenticationManager authenticationManager;
+    private final AuthenticationManager authenticationManager;
 
-    @Autowired
-    private JwtUtil jwtUtil;
+    private final JwtUtil jwtUtil;
 
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    private final UserService userService;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
@@ -43,7 +40,7 @@ public class AuthController {
                             loginRequest.getUsername(),
                             loginRequest.getPassword()));
 
-            User user = userRepository.findByUsername(loginRequest.getUsername())
+            User user = userService.findByUsername(loginRequest.getUsername())
                     .orElseThrow(() -> new BadCredentialsException("User not found"));
 
             String token = jwtUtil.generateToken(user.getUsername(), user.getRole().toString());
@@ -56,19 +53,28 @@ public class AuthController {
                     user.getEmail(),
                     user.getRole().toString());
 
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok(Response.<LoginResponse>builder()
+                    .success(true)
+                    .message("Login successful")
+                    .data(response)
+                    .timestamp(LocalDateTime.now())
+                    .build());
 
         } catch (BadCredentialsException e) {
-            Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("status", HttpStatus.UNAUTHORIZED.value());
-            errorResponse.put("error", "Unauthorized");
-            errorResponse.put("message", "Invalid username or password");
+            Response<?> errorResponse = Response.builder()
+                    .success(false)
+                    .message("Invalid username or password")
+                    .timestamp(LocalDateTime.now())
+                    .errors(HttpStatus.UNAUTHORIZED.getReasonPhrase())
+                    .build();
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
         } catch (Exception e) {
-            Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
-            errorResponse.put("error", "Internal Server Error");
-            errorResponse.put("message", e.getMessage());
+            Response<?> errorResponse = Response.builder()
+                    .success(false)
+                    .message(e.getMessage())
+                    .timestamp(LocalDateTime.now())
+                    .errors(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase())
+                    .build();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }
@@ -78,18 +84,26 @@ public class AuthController {
         try {
             if (authHeader == null || !authHeader.startsWith("Bearer ")) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(Map.of("valid", false, "message", "Missing or invalid Authorization header"));
+                        .body(Response.builder()
+                                .success(false)
+                                .message("Missing or invalid Authorization header")
+                                .timestamp(LocalDateTime.now())
+                                .build());
             }
 
             String token = authHeader.substring(7);
 
             if (!jwtUtil.validateToken(token)) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(Map.of("valid", false, "message", "Token expired or invalid"));
+                        .body(Response.builder()
+                                .success(false)
+                                .message("Token expired or invalid")
+                                .timestamp(LocalDateTime.now())
+                                .build());
             }
 
             String username = jwtUtil.extractUsername(token);
-            User user = userRepository.findByUsername(username)
+            User user = userService.findByUsername(username)
                     .orElseThrow(() -> new Exception("User not found"));
 
             Map<String, Object> userProfile = new HashMap<>();
@@ -103,11 +117,21 @@ public class AuthController {
             userProfile.put("createdAt", user.getCreatedAt());
             userProfile.put("updatedAt", user.getUpdatedAt());
 
-            return ResponseEntity.ok(userProfile);
+            return ResponseEntity.ok(Response.<Map<String, Object>>builder()
+                    .success(true)
+                    .message("User profile fetched successfully")
+                    .data(userProfile)
+                    .timestamp(LocalDateTime.now())
+                    .build());
 
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("valid", false, "message", "Invalid token or user not found"));
+            Response<?> errorResponse = Response.builder()
+                    .success(false)
+                    .message("Invalid token or user not found")
+                    .timestamp(LocalDateTime.now())
+                    .errors(HttpStatus.UNAUTHORIZED.getReasonPhrase())
+                    .build();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
         }
     }
 }

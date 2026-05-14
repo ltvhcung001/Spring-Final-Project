@@ -12,6 +12,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import org.example.internmanagement.dto.response.Response;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -23,35 +25,55 @@ public class MentorController {
     private final UserService userService;
 
     @GetMapping
-    public ResponseEntity<List<MentorResponseDTO>> getAllMentors(
+    public ResponseEntity<Response<List<MentorResponseDTO>>> getAllMentors(
             @AuthenticationPrincipal UserDetails userDetails) {
         User currentUser = userService.getCurrentUser(userDetails);
-        return ResponseEntity.ok(mentorService.getAllMentors(currentUser));
+        return ResponseEntity.ok(Response.<List<MentorResponseDTO>>builder()
+                .success(true)
+                .message("Mentors fetched successfully")
+                .data(mentorService.getAllMentors(currentUser))
+                .timestamp(LocalDateTime.now())
+                .build());
     }
 
     @GetMapping("/{mentor_id}")
-    public ResponseEntity<MentorResponseDTO> getMentorById(
+    public ResponseEntity<Response<MentorResponseDTO>> getMentorById(
             @PathVariable("mentor_id") Integer mentorId,
             @AuthenticationPrincipal UserDetails userDetails) {
         User currentUser = userService.getCurrentUser(userDetails);
-        return ResponseEntity.ok(mentorService.getMentorById(mentorId, currentUser));
+        return ResponseEntity.ok(Response.<MentorResponseDTO>builder()
+                .success(true)
+                .message("Mentor fetched successfully")
+                .data(mentorService.getMentorById(mentorId, currentUser))
+                .timestamp(LocalDateTime.now())
+                .build());
     }
 
     @PostMapping
-    public ResponseEntity<MentorResponseDTO> createMentor(
+    public ResponseEntity<Response<MentorResponseDTO>> createMentor(
             @RequestBody MentorRequestDTO request,
             @AuthenticationPrincipal UserDetails userDetails) {
         User currentUser = userService.getCurrentUser(userDetails);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(mentorService.createMentor(request, currentUser));
+                .body(Response.<MentorResponseDTO>builder()
+                        .success(true)
+                        .message("Mentor created successfully")
+                        .data(mentorService.createMentor(request, currentUser))
+                        .timestamp(LocalDateTime.now())
+                        .build());
     }
 
     @PutMapping("/{mentor_id}")
-    public ResponseEntity<MentorResponseDTO> updateMentor(
+    public ResponseEntity<Response<MentorResponseDTO>> updateMentor(
             @PathVariable("mentor_id") Integer mentorId,
             @RequestBody MentorRequestDTO request,
             @AuthenticationPrincipal UserDetails userDetails) {
         User currentUser = userService.getCurrentUser(userDetails);
-        return ResponseEntity.ok(mentorService.updateMentor(mentorId, request, currentUser));
+        return ResponseEntity.ok(Response.<MentorResponseDTO>builder()
+                .success(true)
+                .message("Mentor updated successfully")
+                .data(mentorService.updateMentor(mentorId, request, currentUser))
+                .timestamp(LocalDateTime.now())
+                .build());
     }
 }

@@ -12,6 +12,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -25,6 +26,11 @@ public class UserServiceImpl implements UserService {
     public User getCurrentUser(UserDetails userDetails) {
         return userRepository.findByUsername(userDetails.getUsername())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+    }
+
+    @Override
+    public Optional<User> findByUsername(String username) {
+        return userRepository.findByUsername(username);
     }
 
     @Override
@@ -59,8 +65,8 @@ public class UserServiceImpl implements UserService {
         user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
         user.setFullName(request.getFullName());
         user.setEmail(request.getEmail());
-        user.setPhoneNumber(request.getPhoneNumber());
-        user.setRole(request.getRole() != null ? request.getRole() : User.Role.STUDENT);
+        user.setPhoneNumber(request.getPhone());
+        user.setRole(request.getRole() != null ? User.Role.valueOf(request.getRole()) : User.Role.STUDENT);
         user.setIsActive(true);
 
         return UserResponseDTO.fromEntity(userRepository.save(user));
@@ -86,9 +92,9 @@ public class UserServiceImpl implements UserService {
         }
         user.setFullName(request.getFullName());
         user.setEmail(request.getEmail());
-        user.setPhoneNumber(request.getPhoneNumber());
+        user.setPhoneNumber(request.getPhone());
         if (request.getRole() != null) {
-            user.setRole(request.getRole());
+            user.setRole(User.Role.valueOf(request.getRole()));
         }
 
         return UserResponseDTO.fromEntity(userRepository.save(user));

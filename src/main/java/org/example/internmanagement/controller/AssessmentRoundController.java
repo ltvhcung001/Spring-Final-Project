@@ -12,6 +12,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import org.example.internmanagement.dto.response.Response;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -23,45 +25,69 @@ public class AssessmentRoundController {
     private final UserService userService;
 
     @GetMapping
-    public ResponseEntity<List<AssessmentRoundResponseDTO>> getAllRounds(
+    public ResponseEntity<Response<List<AssessmentRoundResponseDTO>>> getAllRounds(
             @RequestParam(required = false) Integer phaseId,
             @AuthenticationPrincipal UserDetails userDetails) {
         User currentUser = userService.getCurrentUser(userDetails);
-        return ResponseEntity.ok(assessmentRoundService.getAllRounds(phaseId, currentUser));
+        return ResponseEntity.ok(Response.<List<AssessmentRoundResponseDTO>>builder()
+                .success(true)
+                .message("Assessment rounds fetched successfully")
+                .data(assessmentRoundService.getAllRounds(phaseId, currentUser))
+                .timestamp(LocalDateTime.now())
+                .build());
     }
 
     @GetMapping("/{round_id}")
-    public ResponseEntity<AssessmentRoundResponseDTO> getRoundById(
+    public ResponseEntity<Response<AssessmentRoundResponseDTO>> getRoundById(
             @PathVariable("round_id") Integer roundId,
             @AuthenticationPrincipal UserDetails userDetails) {
         User currentUser = userService.getCurrentUser(userDetails);
-        return ResponseEntity.ok(assessmentRoundService.getRoundById(roundId, currentUser));
+        return ResponseEntity.ok(Response.<AssessmentRoundResponseDTO>builder()
+                .success(true)
+                .message("Assessment round fetched successfully")
+                .data(assessmentRoundService.getRoundById(roundId, currentUser))
+                .timestamp(LocalDateTime.now())
+                .build());
     }
 
     @PostMapping
-    public ResponseEntity<AssessmentRoundResponseDTO> createRound(
+    public ResponseEntity<Response<AssessmentRoundResponseDTO>> createRound(
             @RequestBody AssessmentRoundRequestDTO request,
             @AuthenticationPrincipal UserDetails userDetails) {
         User currentUser = userService.getCurrentUser(userDetails);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(assessmentRoundService.createRound(request, currentUser));
+                .body(Response.<AssessmentRoundResponseDTO>builder()
+                        .success(true)
+                        .message("Assessment round created successfully")
+                        .data(assessmentRoundService.createRound(request, currentUser))
+                        .timestamp(LocalDateTime.now())
+                        .build());
     }
 
     @PutMapping("/{round_id}")
-    public ResponseEntity<AssessmentRoundResponseDTO> updateRound(
+    public ResponseEntity<Response<AssessmentRoundResponseDTO>> updateRound(
             @PathVariable("round_id") Integer roundId,
             @RequestBody AssessmentRoundRequestDTO request,
             @AuthenticationPrincipal UserDetails userDetails) {
         User currentUser = userService.getCurrentUser(userDetails);
-        return ResponseEntity.ok(assessmentRoundService.updateRound(roundId, request, currentUser));
+        return ResponseEntity.ok(Response.<AssessmentRoundResponseDTO>builder()
+                .success(true)
+                .message("Assessment round updated successfully")
+                .data(assessmentRoundService.updateRound(roundId, request, currentUser))
+                .timestamp(LocalDateTime.now())
+                .build());
     }
 
     @DeleteMapping("/{round_id}")
-    public ResponseEntity<Void> deleteRound(
+    public ResponseEntity<Response<Void>> deleteRound(
             @PathVariable("round_id") Integer roundId,
             @AuthenticationPrincipal UserDetails userDetails) {
         User currentUser = userService.getCurrentUser(userDetails);
         assessmentRoundService.deleteRound(roundId, currentUser);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(Response.<Void>builder()
+                .success(true)
+                .message("Assessment round deleted successfully")
+                .timestamp(LocalDateTime.now())
+                .build());
     }
 }

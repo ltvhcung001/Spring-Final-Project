@@ -14,6 +14,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import org.example.internmanagement.dto.response.Response;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -26,34 +28,54 @@ public class InternshipAssignmentController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'MENTOR', 'STUDENT')")
-    public ResponseEntity<List<InternshipAssignmentResponseDTO>> getAllAssignments(
+    public ResponseEntity<Response<List<InternshipAssignmentResponseDTO>>> getAllAssignments(
             @AuthenticationPrincipal UserDetails userDetails) {
         User user = userService.getCurrentUser(userDetails);
-        return ResponseEntity.ok(internshipAssignmentService.getAllAssignments(user));
+        return ResponseEntity.ok(Response.<List<InternshipAssignmentResponseDTO>>builder()
+                .success(true)
+                .message("Assignments fetched successfully")
+                .data(internshipAssignmentService.getAllAssignments(user))
+                .timestamp(LocalDateTime.now())
+                .build());
     }
 
     @GetMapping("/{assignment_id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MENTOR', 'STUDENT')")
-    public ResponseEntity<InternshipAssignmentResponseDTO> getAssignmentById(
+    public ResponseEntity<Response<InternshipAssignmentResponseDTO>> getAssignmentById(
             @PathVariable("assignment_id") Integer assignmentId,
             @AuthenticationPrincipal UserDetails userDetails) {
         User user = userService.getCurrentUser(userDetails);
-        return ResponseEntity.ok(internshipAssignmentService.getAssignmentById(assignmentId, user));
+        return ResponseEntity.ok(Response.<InternshipAssignmentResponseDTO>builder()
+                .success(true)
+                .message("Assignment fetched successfully")
+                .data(internshipAssignmentService.getAssignmentById(assignmentId, user))
+                .timestamp(LocalDateTime.now())
+                .build());
     }
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<InternshipAssignmentResponseDTO> createAssignment(
+    public ResponseEntity<Response<InternshipAssignmentResponseDTO>> createAssignment(
             @RequestBody InternshipAssignmentRequestDTO requestDTO) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(internshipAssignmentService.createAssignment(requestDTO));
+                .body(Response.<InternshipAssignmentResponseDTO>builder()
+                        .success(true)
+                        .message("Assignment created successfully")
+                        .data(internshipAssignmentService.createAssignment(requestDTO))
+                        .timestamp(LocalDateTime.now())
+                        .build());
     }
 
     @PutMapping("/{assignment_id}/status")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<InternshipAssignmentResponseDTO> updateAssignmentStatus(
+    public ResponseEntity<Response<InternshipAssignmentResponseDTO>> updateAssignmentStatus(
             @PathVariable("assignment_id") Integer assignmentId,
             @RequestBody InternshipAssignmentStatusRequestDTO requestDTO) {
-        return ResponseEntity.ok(internshipAssignmentService.updateAssignmentStatus(assignmentId, requestDTO));
+        return ResponseEntity.ok(Response.<InternshipAssignmentResponseDTO>builder()
+                .success(true)
+                .message("Assignment status updated successfully")
+                .data(internshipAssignmentService.updateAssignmentStatus(assignmentId, requestDTO))
+                .timestamp(LocalDateTime.now())
+                .build());
     }
 }

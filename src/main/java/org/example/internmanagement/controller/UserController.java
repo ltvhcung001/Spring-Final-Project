@@ -9,6 +9,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import org.example.internmanagement.dto.response.Response;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -23,38 +25,68 @@ public class UserController {
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<UserResponseDTO>> getAllUsers(@RequestParam(required = false) User.Role role) {
-        return ResponseEntity.ok(userService.getAllUsers(role));
+    public ResponseEntity<Response<List<UserResponseDTO>>> getAllUsers(@RequestParam(required = false) User.Role role) {
+        return ResponseEntity.ok(Response.<List<UserResponseDTO>>builder()
+                .success(true)
+                .message("Users fetched successfully")
+                .data(userService.getAllUsers(role))
+                .timestamp(LocalDateTime.now())
+                .build());
     }
 
     @GetMapping("/{user_id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<UserResponseDTO> getUserById(@PathVariable Integer user_id) {
-        return ResponseEntity.ok(userService.getUserById(user_id));
+    public ResponseEntity<Response<UserResponseDTO>> getUserById(@PathVariable Integer user_id) {
+        return ResponseEntity.ok(Response.<UserResponseDTO>builder()
+                .success(true)
+                .message("User fetched successfully")
+                .data(userService.getUserById(user_id))
+                .timestamp(LocalDateTime.now())
+                .build());
     }
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<UserResponseDTO> createUser(@RequestBody UserRequestDTO request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(userService.createUser(request));
+    public ResponseEntity<Response<UserResponseDTO>> createUser(@RequestBody UserRequestDTO request) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(Response.<UserResponseDTO>builder()
+                        .success(true)
+                        .message("User created successfully")
+                        .data(userService.createUser(request))
+                        .timestamp(LocalDateTime.now())
+                        .build());
     }
 
     @PutMapping("/{user_id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<UserResponseDTO> updateUser(@PathVariable Integer user_id, @RequestBody UserRequestDTO request) {
-        return ResponseEntity.ok(userService.updateUser(user_id, request));
+    public ResponseEntity<Response<UserResponseDTO>> updateUser(@PathVariable Integer user_id, @RequestBody UserRequestDTO request) {
+        return ResponseEntity.ok(Response.<UserResponseDTO>builder()
+                .success(true)
+                .message("User updated successfully")
+                .data(userService.updateUser(user_id, request))
+                .timestamp(LocalDateTime.now())
+                .build());
     }
 
     @PutMapping("/{user_id}/status")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<UserResponseDTO> updateStatus(@PathVariable Integer user_id, @RequestParam Boolean isActive) {
-        return ResponseEntity.ok(userService.updateStatus(user_id, isActive));
+    public ResponseEntity<Response<UserResponseDTO>> updateStatus(@PathVariable Integer user_id, @RequestParam Boolean isActive) {
+        return ResponseEntity.ok(Response.<UserResponseDTO>builder()
+                .success(true)
+                .message("User status updated successfully")
+                .data(userService.updateStatus(user_id, isActive))
+                .timestamp(LocalDateTime.now())
+                .build());
     }
 
     @DeleteMapping("/{user_id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> deleteUser(@PathVariable Integer user_id) {
+    public ResponseEntity<Response<Void>> deleteUser(@PathVariable Integer user_id) {
         userService.deleteUser(user_id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(Response.<Void>builder()
+                .success(true)
+                .message("User deleted successfully")
+                .timestamp(LocalDateTime.now())
+                .build());
     }
 }

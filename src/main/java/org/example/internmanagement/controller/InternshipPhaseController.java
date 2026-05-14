@@ -12,6 +12,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import org.example.internmanagement.dto.response.Response;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -23,44 +25,68 @@ public class InternshipPhaseController {
     private final UserService userService;
 
     @GetMapping
-    public ResponseEntity<List<InternshipPhaseResponseDTO>> getAllPhases(
+    public ResponseEntity<Response<List<InternshipPhaseResponseDTO>>> getAllPhases(
             @AuthenticationPrincipal UserDetails userDetails) {
         User currentUser = userService.getCurrentUser(userDetails);
-        return ResponseEntity.ok(internshipPhaseService.getAllPhases(currentUser));
+        return ResponseEntity.ok(Response.<List<InternshipPhaseResponseDTO>>builder()
+                .success(true)
+                .message("Phases fetched successfully")
+                .data(internshipPhaseService.getAllPhases(currentUser))
+                .timestamp(LocalDateTime.now())
+                .build());
     }
 
     @GetMapping("/{phase_id}")
-    public ResponseEntity<InternshipPhaseResponseDTO> getPhaseById(
+    public ResponseEntity<Response<InternshipPhaseResponseDTO>> getPhaseById(
             @PathVariable("phase_id") Integer phaseId,
             @AuthenticationPrincipal UserDetails userDetails) {
         User currentUser = userService.getCurrentUser(userDetails);
-        return ResponseEntity.ok(internshipPhaseService.getPhaseById(phaseId, currentUser));
+        return ResponseEntity.ok(Response.<InternshipPhaseResponseDTO>builder()
+                .success(true)
+                .message("Phase fetched successfully")
+                .data(internshipPhaseService.getPhaseById(phaseId, currentUser))
+                .timestamp(LocalDateTime.now())
+                .build());
     }
 
     @PostMapping
-    public ResponseEntity<InternshipPhaseResponseDTO> createPhase(
+    public ResponseEntity<Response<InternshipPhaseResponseDTO>> createPhase(
             @RequestBody InternshipPhaseRequestDTO request,
             @AuthenticationPrincipal UserDetails userDetails) {
         User currentUser = userService.getCurrentUser(userDetails);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(internshipPhaseService.createPhase(request, currentUser));
+                .body(Response.<InternshipPhaseResponseDTO>builder()
+                        .success(true)
+                        .message("Phase created successfully")
+                        .data(internshipPhaseService.createPhase(request, currentUser))
+                        .timestamp(LocalDateTime.now())
+                        .build());
     }
 
     @PutMapping("/{phase_id}")
-    public ResponseEntity<InternshipPhaseResponseDTO> updatePhase(
+    public ResponseEntity<Response<InternshipPhaseResponseDTO>> updatePhase(
             @PathVariable("phase_id") Integer phaseId,
             @RequestBody InternshipPhaseRequestDTO request,
             @AuthenticationPrincipal UserDetails userDetails) {
         User currentUser = userService.getCurrentUser(userDetails);
-        return ResponseEntity.ok(internshipPhaseService.updatePhase(phaseId, request, currentUser));
+        return ResponseEntity.ok(Response.<InternshipPhaseResponseDTO>builder()
+                .success(true)
+                .message("Phase updated successfully")
+                .data(internshipPhaseService.updatePhase(phaseId, request, currentUser))
+                .timestamp(LocalDateTime.now())
+                .build());
     }
 
     @DeleteMapping("/{phase_id}")
-    public ResponseEntity<Void> deletePhase(
+    public ResponseEntity<Response<Void>> deletePhase(
             @PathVariable("phase_id") Integer phaseId,
             @AuthenticationPrincipal UserDetails userDetails) {
         User currentUser = userService.getCurrentUser(userDetails);
         internshipPhaseService.deletePhase(phaseId, currentUser);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(Response.<Void>builder()
+                .success(true)
+                .message("Phase deleted successfully")
+                .timestamp(LocalDateTime.now())
+                .build());
     }
 }

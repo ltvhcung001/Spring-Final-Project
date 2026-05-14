@@ -13,6 +13,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import org.example.internmanagement.dto.response.Response;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -25,30 +27,45 @@ public class AssessmentResultController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'MENTOR', 'STUDENT')")
-    public ResponseEntity<List<AssessmentResultResponseDTO>> getAssessmentResults(
+    public ResponseEntity<Response<List<AssessmentResultResponseDTO>>> getAssessmentResults(
             @RequestParam(value = "assignment_id", required = false) Integer assignmentId,
             @AuthenticationPrincipal UserDetails userDetails) {
         User user = userService.getCurrentUser(userDetails);
-        return ResponseEntity.ok(assessmentResultService.getAssessmentResults(assignmentId, user));
+        return ResponseEntity.ok(Response.<List<AssessmentResultResponseDTO>>builder()
+                .success(true)
+                .message("Assessment results fetched successfully")
+                .data(assessmentResultService.getAssessmentResults(assignmentId, user))
+                .timestamp(LocalDateTime.now())
+                .build());
     }
 
     @PostMapping
     @PreAuthorize("hasRole('MENTOR')")
-    public ResponseEntity<AssessmentResultResponseDTO> createAssessmentResult(
+    public ResponseEntity<Response<AssessmentResultResponseDTO>> createAssessmentResult(
             @RequestBody AssessmentResultRequestDTO requestDTO,
             @AuthenticationPrincipal UserDetails userDetails) {
         User user = userService.getCurrentUser(userDetails);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(assessmentResultService.createAssessmentResult(requestDTO, user));
+                .body(Response.<AssessmentResultResponseDTO>builder()
+                        .success(true)
+                        .message("Assessment result created successfully")
+                        .data(assessmentResultService.createAssessmentResult(requestDTO, user))
+                        .timestamp(LocalDateTime.now())
+                        .build());
     }
 
     @PutMapping("/{result_id}")
     @PreAuthorize("hasRole('MENTOR')")
-    public ResponseEntity<AssessmentResultResponseDTO> updateAssessmentResult(
+    public ResponseEntity<Response<AssessmentResultResponseDTO>> updateAssessmentResult(
             @PathVariable("result_id") Integer resultId,
             @RequestBody AssessmentResultRequestDTO requestDTO,
             @AuthenticationPrincipal UserDetails userDetails) {
         User user = userService.getCurrentUser(userDetails);
-        return ResponseEntity.ok(assessmentResultService.updateAssessmentResult(resultId, requestDTO, user));
+        return ResponseEntity.ok(Response.<AssessmentResultResponseDTO>builder()
+                .success(true)
+                .message("Assessment result updated successfully")
+                .data(assessmentResultService.updateAssessmentResult(resultId, requestDTO, user))
+                .timestamp(LocalDateTime.now())
+                .build());
     }
 }
